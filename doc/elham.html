@@ -141,7 +141,7 @@ occurred.</p>
 <h2><a name="files:meta">Meta</a></h2>
 <p>The first 48 bytes of a meta file are the
 <b>DataFileControlBlock</b> and it has the fields, in order:</p>
-<table border="2">
+<table border="2" summary="Fields of the <b>DataFileControlBlock</b>">
 <tbody>
 <tr>
 <th>Field</th>
@@ -208,7 +208,7 @@ occurred.</p>
 <p><em>XXX Verify blocks * blockSize == fileSize</em></p>
 <p>Each meta block occupies 104 bytes. The fields, in order,
 are:</p>
-<table border="2">
+<table border="2" summary="Format of meta block">
 <tbody>
 <tr>
 <th>Field</th>
@@ -311,7 +311,7 @@ blocks</em></p>
 <h2><a name="files:history">History</a></h2>
 <p>Each history block occupies 40 bytes and the fields are in
 order:</p>
-<table border="2">
+<table border="2" summary="Format of history block">
 <tbody>
 <tr>
 <th>Field</th>
@@ -404,7 +404,7 @@ same volume. But, if you do this, you need to make sure the base
 for each directory is unique. Otherwise you will soon encounter
 corruption. E.g.:</p>
 <center>
-<table border="0">
+<table border="0" summary="Directory layout">
 <tbody>
 <tr>
 <td>/t/bo/vol1/data</td>
@@ -430,7 +430,7 @@ data, meta, and history files for <b>0.dlh/5.dlh/19.flh</b>.</p>
 hammer, it is very important to have data committed to the data
 store on the server and not cached on the client. As such, here are
 some recommended settings for mounting the data store:</p>
-<table border="2">
+<table border="2" summary="Client mounting options">
 <tbody>
 <tr>
 <th>OS</th>
@@ -455,7 +455,7 @@ some recommended settings for mounting the data store:</p>
 <h1><a name="params">Parameters</a></h1>
 <hr noshade="noshade" align="center" size="6">
 <h2><a name="params:paths">Paths</a></h2>
-<table border="2">
+<table border="2" summary="Path options">
 <tbody>
 <tr>
 <th>Option</th>
@@ -480,7 +480,7 @@ some recommended settings for mounting the data store:</p>
 </tbody>
 </table>
 <h2><a name="params:rand">Random number generation</a></h2>
-<table border="2">
+<table border="2" summary="Random number generation parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -507,7 +507,7 @@ described in detail at <a href=
 Home Page</a>.</p>
 <h2><a name="params:default">Default parameterization for testing
 strategies</a></h2>
-<table border="2">
+<table border="2" summary="Testing strategy parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -561,7 +561,7 @@ warlock(loghyr)&gt; ./elham.sun4 -doc -lock -iters 1
 === Final Input Parameters ===
 </pre>
 <h2><a name="params:shaping">Directory tree shaping</a></h2>
-<table border="2">
+<table border="2" summary="Directory tree growth parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -617,7 +617,7 @@ not. If it does, we pick another name. When we have a name which
 does not exist, we construct the path to the name, if needed, and
 then create the file.</p>
 <h2><a name="params:actions">Actions</a></h2>
-<table border="2">
+<table border="2" summary="Action parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -676,7 +676,7 @@ Also, for create, the number of blocks created will be dictated by
 <em>-acton</em>. The blocks are randomly selected over the set of
 all blocks in the file.</p>
 <h2><a name="params:access">File access and locking</a></h2>
-<table border="2">
+<table border="2" summary="File access and locking parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -718,7 +718,7 @@ all blocks in the file.</p>
 <p>The <em>-wt*</em> and <em>-scan</em> options are mutually
 exclusive and ElHam will puke on the combination.</p>
 <h2><a name="params:block">Block and File sizes</a></h2>
-<table border="2">
+<table border="2" summary="Block and file size parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -758,7 +758,7 @@ exclusive and ElHam will puke on the combination.</p>
 </tbody>
 </table>
 <h2><a name="params:help">Help</a></h2>
-<table border="2">
+<table border="2" summary="Help parameters">
 <tbody>
 <tr>
 <th>Option</th>
@@ -800,7 +800,6 @@ format.</p>
 <hr noshade="noshade" align="center" size="6">
 <br>
 <br>
-<a name="strategy"></a>
 <h1><a name="strategy">Some testing strategies</a></h1>
 <hr noshade="noshade" align="center" size="6">
 <h2><a name="strategy:recycle">File Recycling</a></h2>
@@ -827,7 +826,7 @@ delete the files.</em></p>
 ./elham -wtread 0 -wtcreate 0 -wtwrite 0 -wtdelete 0 -wtunlink 100
 </pre>
 <p>This has one instance only creating files and the second only deleting. It
-makes for some very interesting testing of locks.<p>
+makes for some very interesting testing of locks.</p>
 <p>If combining this test with other testing strategies, a slight modification
 allows for other actions to occur:</p>
 <pre>
@@ -901,7 +900,7 @@ functionality.</p>
 <hr noshade="noshade" align="center" size="6">
 <br>
 <br>
-<address><a name="faq:evh">Tom Haynes</a> (<a href=
+<address>Tom Haynes (<a href=
 "http://sourceforge.net/sendmessage.php?touser=986847">loghyr at
 users.sourceforge.net</a>) 16 January 2003<br>
 $Id$</address>
