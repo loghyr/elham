@@ -1,0 +1,8 @@
+Okay, current status of the project as far as cross-platform
+compatibility.
+
+Linux   - builds okay
+Solaris - builds okay
+HP/UX   - doesn't build okay
+AIX     - once I find I compiler, I'll let you know
+Win32   - built at one point, I'm going to have to redo this one

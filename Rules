@@ -1,0 +1,26 @@
+# Hey emacs, this is a piece of a -*- Makefile -*-
+
+build: build-bin build-man
+
+build-bin: $(BINS)
+
+MANS=$(patsubst %$(EXE),%.1,$(BINS))
+
+$(MANS): %.1 : %.c
+#	tharndoc -o $@ $< -f man -S $(shell pwd)
+
+build-man: $(MANS)
+
+install: install-bin install-man
+
+install-bin: build-bin
+	for x in $(BINS); do cp $$x $(BINDIR) ; done
+
+install-man: build-man
+	for x in $(MANS); do cp $$x $(MANDIR) ; done
+
+clean:
+	-rm -f $(BINS) $(OBJS) $(MANS)
+
+distclean:
+	-rm -f $(BINS) $(OBJS) $(MANS)

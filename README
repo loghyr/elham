@@ -1,0 +1,43 @@
+Minimal set of build inststructions:
+
+cd src
+autoscan
+cd ..
+autoconf
+./configure
+make
+
+Minimal set of execution instructions:
+
+mkdir /foo1/data
+mkdir /foo2/history
+mkdir /foo3/meta
+
+./elham -data /foo1/data -history /foo2/history -meta /foo3/meta
+
+Minimal mounting instructions:
+
+Make sure to disable as much client side caching as possible if
+going across the wire.
+
+Solaris:
+mount -o noac,forcedirectio,rw,bg,hard,intr,noquota,vers=3,proto=tcp blah:/vol/data /t/blah/data
+
+Linux:
+mount -o noac,rw,bg,hard,intr,rsize=8192,wsize=8192 blah:/vol/data /t/blah/data
+
+One of my todo's is to enable ODIRECT support in Linux.  If you want, add
+it locally.
+
+Mininal warnings about what you are about to do:
+
+ElHam stresses filesystems.  It seeks to find corruption.  It may inadvertantly
+cause corruption, especially if you mount filesystems incorrectly.  You may
+have to run fsck or its equivalent.
+
+So, be very careful running this program on production systems or ones with
+data your care about.
+
+Also, ElHam seeks to fill the filesystems to capacity, back off, and do it
+again.  Try and put the 3 different directories on different filesystems.
+

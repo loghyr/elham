@@ -1,0 +1,13 @@
+# Hey emacs, this is a piece of a -*- Makefile -*-
+
+CC	:=gcc
+CFLAGS	:=-O2 -DHAVE_CONFIG_H -I ..
+LDFLAGS	:=-s
+BINDIR	:=/u/thomas/tools/elham/bin
+MANDIR	:=/u/thomas/tools/elham/man
+EXE	:=
+UNIX	:=yes
+WINDOWS	:=no
+HAVE_32_BIT_OFFSET :=yes
+HAVE_64_BIT_OFFSET :=yes
+LARGEST_OFFSET :=64

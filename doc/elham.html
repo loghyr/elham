@@ -1,0 +1,452 @@
+------------------------------------------------------------------------
+
+
+  ElHam
+
+------------------------------------------------------------------------
+
+
+  Version
+
+$Id$
+
+------------------------------------------------------------------------
+
+
+  Table of Contents
+
+    * Quick Overview <#quick>
+          o File distribution <#quick:files>
+          o Byte Ordering <#quick:bytes>
+          o Actions <#quick:actions>
+    * File Formats <#files>
+          o Meta <#quick:meta>
+          o History <#quick:history>
+    * Setup <#setup>
+          o Directories <#setup:dirs>
+          o NFS mount options <#setup:nfs>
+    * Parameters <#params>
+          o Paths <#params:paths>
+          o Random number generation <#params:rand>
+          o Default parameterization for testing strategies
+            <#params:default>
+          o Directory tree shaping <#params:shaping>
+          o Actions <#params:actions>
+          o File access and locking <#params:access>
+          o Block and File sizes <#params:block>
+          o Help <#params:help>
+    * Some additional tools <#tools>
+          o datadump <#tools:data>
+          o histdump <#tools:hist>
+          o metadump <#tools:meta>
+    * Some testing strategies <#strategy>
+          o File Recycling <#strategy:recyle>
+    * FAQ <#faq>
+          o What are the differences between hammer and elham? <#faq:evh>
+
+------------------------------------------------------------------------
+
+
+  Quick Overview
+
+Elham is a testing utility designed to provide multi-protocol locking,
+readdir, and corruption coverage.
+
+
+    File distribution
+
+Each file in elham is distributed to 3 different areas: data, meta, and
+history. The data file contains the randomly generated content which is
+grouped into blocks. The number of blocks that will be generated for a
+given data file is predetermined and corresponding metadata blocks
+describing each data block are generated in the meta file. For each
+action that we perform on a block (or the file), we record that
+information in the history file.
+
+As the format for each file is rigid, we are able to byte lock areas of
+the file for testing the lock manager. Note that metadata blocks and
+history blocks are of a constant length over all files, while the data
+blocks are of a constant length for a given data file. (The blocksize
+can be found inside the meta file header.)
+
+Further, as data files can be deleted and then recreated with a
+different blocksize, the history file records the block size at the time
+of the action. While the data and meta files can be deleted, the history
+files spans multiple instances of the data file.
+
+Finally, as a subset of blocks are randomly written to the data file, we
+allow for the testing of holes.
+
+
+    Byte Ordering
+
+All files are binary and are written to in network data order. As such,
+the various implementations of hexdump may or may not display the data
+correctly on little endian systems. Use *datadump* to examine a file if
+needed. It displays data akin to the defaults of the Solaris hexdump
+utility.
+
+
+    Actions
+
+Each instance of elham determines an action from either create, read,
+write, delete, and unlink. It then applies that action to a randomly
+selected file. Other than create, for each action which affects a block,
+that block is checked to see if corruption has occurred.
+
+------------------------------------------------------------------------
+
+
+  File formats
+
+
+    Meta
+
+The first 48 bytes of a meta file are the *DataFileControlBlock* and it
+has the fields, in order:
+
+Field 	Size 	Explanation
+signature 	4 	A magic cookie
+version 	4 	The version of metafile format
+blocks 	8 	The number of blocks in the data file
+blockSize 	8 	The size of the blocks in the data file
+flips 	8 	The number of times to preload the random number sequence
+fileSize 	8 	The size of the datafile
+seed 	4 	The seed used to generate data
+corrupt 	1 	Whether the data file contains corruption or not
+uc5 	1 	Unused byte
+uc6 	1 	Unused byte
+uc7 	1 	Unused byte
+
+/XXX Verify blocks * blockSize == fileSize/
+
+Each meta block occupies 104 bytes. The fields, in order, are:
+
+Field 	Size 	Explanation
+offset 	8 	The offset of this block in the data file
+blockSize 	8 	The size of the block in the data file
+flips 	8 	The number of times to preload the random number sequence
+pattern 	8 	The initial pattern occupying the first 8 bytes of the block
+createTime 	8 	The time the block was created
+modifyTime 	8 	The time the block was last written
+accessTime 	8 	The time the block was last written or read
+readTime 	8 	The time the block was last read
+createPid 	8 	PID of the process to create the block
+modifyPid 	8 	PID of the process to last modify the block
+accessPid 	8 	PID of the process to last accesss the block
+readPid 	8 	PID of the process to last read the block
+seed 	4 	The seed used to generate the block during the last write to
+the block
+inUse 	1 	Does the block contain unused, valid, or deleted data
+corrupt 	1 	Has some process marked the block as corrupt
+uc6 	1 	Unused byte
+uc7 	1 	Unused byte
+
+/XXX explain why we record different seeds in dfcb and meta blocks/
+
+/XXX remove access fields?/
+
+/XXX Verify blockNumber * blockSize == offset/
+
+
+    History
+
+Each history block occupies 40 bytes and the fields are in order:
+
+Field 	Size 	Explanation
+time 	8 	The time this history block occured
+seed 	4 	The seed in use by the block
+action 	1 	What action elham took on the block
+corrupt 	1 	Has some process marked the block as corrupt
+inUse 	1 	Does the block contain unused, valid, or deleted data
+uc7 	1 	Unused byte
+flips 	1 	The number of times to preload the random number sequence
+pattern 	8 	The initial pattern occupying the first 8 bytes of the data
+block
+block 	8 	Which block was acted on
+blockSize 	8 	The size of the block in the data file
+pid 	8 	PID of the process to take the action
+mid 	4 	The machine ID of the process to take the action
+
+/XXX mid not yet implemented/
+
+------------------------------------------------------------------------
+
+
+  Setup
+
+
+    Directories
+
+Elham requires three different directories to proceed:
+
+    * / -data / houses the data files tested for corruption
+    * / -meta / maintains state information about the different blocks
+    * / -history / maintains a trail of actions performed on files and
+      blocks
+
+It is best if each directory resides on a different volume, i.e., a full
+data directory does not preclude an action being recorded in the history
+directory.
+
+However, nothing prevents all three directories residing on the same
+volume. But, if you do this, you need to make sure the base for each
+directory is unique. Otherwise you will soon encounter corruption. E.g.:
+
+/t/bo/vol1/data
+/t/bo/vol1/meta
+/t/bo/vol1/history
+
+The reason you can't have /-data == -meta == -history/ is because each
+hierarchy is populated with files and directories with the same names
+and extensions. For example, */t/bo/vol1/data/0.dlh/5.dlh/19.flh*,
+*/t/bo/vol1/meta/0.dlh/5.dlh/19.flh*, and
+*/t/bo/vol1/history/0.dlh/5.dlh/19.flh* are respectively the data, meta,
+and history files for *0.dlh/5.dlh/19.flh*.
+
+
+    NFS mount options
+
+Because of file contention in elham, which is not present in hammer, it
+is very important to have data committed to the data store on the server
+and not cached on the client. As such, here are some recommended
+settings for mounting the data store:
+
+OS 	Required 	Recommended
+Linux 	noac 	rw,bg,hard,intr,rsize=8192,wsize=8192
+Solaris 	noac,forcedirectio 	noquota,rw,bg,hard,intr
+
+------------------------------------------------------------------------
+
+
+  Parameters
+
+
+    Paths
+
+Option 	Setting 	Explanation
+-data 	PATH 	Base path for data files
+-history 	PATH 	Base path for history files
+-meta 	PATH 	Base path for metafile files
+
+
+    Random number generation
+
+Option 	Setting 	Explanation
+-seed 	N 	set initial random seed to N
+-flips 	N 	number of times to invoke random to start
+
+/-flips/ can be used to advance the current pseudo random number in the
+sequence generated by the /-seed/.
+
+The random number generator is the Mersenne Twister, which is described
+in detail at Mersenne Twister Home Page
+<http://www.math.keio.ac.jp/matumoto/emt.html>.
+
+
+    Default parameterization for testing strategies
+
+Option 	Setting 	Explanation
+-lock 	  	Use defaults for lock manager testing
+-hammer 	  	Use defaults for hammer testing
+
+Provides consistent parameters for either lock testing or hammer
+testing. Note that both are still covered, but that the emphasis is
+placed on one over the over. These two options are mutually exclusive
+and the default values can be overridden on the command line.
+
+*Note:* To see the default values, you can invoke the command as such:
+
+verona(thomas)> ./elham.sun4 -doc -lock -iters 1
+=== Final Input Parameters ===
+        -data is /t/bo/data
+        -meta is /t/bo/meta
+     -history is /t/bo/history
+    -minfsize is 4
+    -maxfsize is 9223372036854775807
+    -minbsize is 4
+    -maxbsize is 67108864
+   -blocksize is random
+        -seed is 0x10c45a11
+       -flips is 0
+       -width is 2
+       -depth is 2
+       -acton is 10
+       -files is 10
+       -iters is 1
+        -scan is random
+        -wait is random
+      -wtread is 20
+    -wtcreate is 20
+     -wtwrite is 20
+    -wtdelete is 20
+    -wtunlink is 20
+=== Final Input Parameters ===
+
+
+    Directory tree shaping
+
+Option 	Setting 	Explanation
+-width 	N 	Maximum number of interior branches
+-depth 	N 	Maximum depth of directory tree
+-files 	N 	Maximum number of files in a directory
+
+The read, write, delete, and unlink actions only need to know the base
+paths in order to proceed. The create action needs to know the general
+shape of the directory hierarchy in order to determine which
+subdirectory to create a new file. Also, certain filesystems may have
+limits on the number of files and/or directories that may be contained
+in a directory. These options allow the user to enforce these limits.
+
+The /-width/ option dictates how many subdirectories can be contained
+inside a directory. The /-depth/ option limits the longest path from the
+root to a leaf in the directory tree. The /-files/ option restricts the
+number of files which can be contained inside a directory. It is up to
+the user to make sure that the number of files and subdirectories does
+not execeed any filesystem limitations (including the sum of the two per
+directory).
+
+One of the internal states which controls elham is the number of files
+available to it. It tracks soft (within 5%) and hard (within 1%) limits
+for the minimum and maximum and modifies the action weights accordingly.
+E.g, it is more likely to create files when the limit is below the hard
+minimum. The number of files is computed by considering the complete
+tree of depth /-depth/. The number of directories (interior nonleaf
+nodes) for such a tree is
+dirs = /-width/^/-depth/ - 1.
+The number of files is then
+files = dirs * /-files/.
+
+When deteriming which file to create, we randomly pick a number in the
+range of the number of files and determine if it exists or not. If it
+does, we pick another name. When we have a name which does not exist, we
+construct the path to the name, if needed, and then create the file.
+
+
+    Actions
+
+Option 	Setting 	Explanation
+-iters 	N 	Number of different actions to take
+-acton 	N 	Number of blocks to process for an action
+-wtcreate 	N 	% weight to spend on file CREATES
+-wtread 	N 	% weight to spend on block READS
+-wtwrite 	N 	% weight to spend on block WRITES
+-wtdelete 	N 	% weight to spend on block DELETES
+-wtunlink 	N 	% weight to spend on file UNLINKS
+
+The /-wt*/ and /-scan/ options are mutually exclusive and elham will
+puke on the combination.
+
+The sum of the /-wt*/ must be *100*, which implies either you know the
+defaults and make sane modifications (i.e., equal addition and
+subtraction) or that you supply all five values at once.
+
+The /-iters/ option allows you to place a limit on how much work elham
+will do. Note this limit is not really bound in time.
+
+For the actions of read, write, and delete, /-acton/ describes how many
+blocks will have that action applied to them. Also, for create, the
+number of blocks created will be dictated by /-acton/. The blocks are
+randomly selected over the set of all blocks in the file.
+
+
+    File access and locking
+
+Option 	Setting 	Explanation
+-scan 	read 	Always read files only
+-scan 	write 	Always write files only
+-scan 	random 	Randomly read/write to files
+-wait 	always 	Always wait on locks
+-wait 	never 	Never wait on locks
+-wait 	random 	Randomly decide to wait on locks
+
+The /-wt*/ and /-scan/ options are mutually exclusive and elham will
+puke on the combination.
+
+
+    Block and File sizes
+
+Option 	Setting 	Explanation
+-blocksize 	N 	use blockSize N bytes
+-blocksize 	random 	use a random blockSize
+-minbsize 	N 	set minimum block size to N bytes
+-maxbsize 	N 	set maximum block size to N bytes
+-minfsize 	N 	set minimum file size to N bytes
+-maxfsize 	N 	set maximum file size to N bytes
+
+
+    Help
+
+Option 	Setting 	Explanation
+-doc 	  	print parameters at end of processing
+-version 	  	print elham version
+-help 	  	print this list
+
+------------------------------------------------------------------------
+
+
+  Some additional tools
+
+
+    datadump
+
+Convert the binary data blocks into human readable format. Also verifies
+the blocks. Can work on all blocks in a file or only one.
+
+
+    histdump
+
+Convert the binary history blocks into human readable format.
+
+
+    metadump
+
+Convert the binary metadata blocks into human readable format.
+
+------------------------------------------------------------------------
+
+
+  Some testing strategies
+
+
+    File Recycling
+
+Run one instance of elham with /-files/ very much greater than a second
+instance. This will force the first instance to want to create files and
+the second instance to want to delete files. They should cycle through
+the subset of files owned by the second instance.
+
+/Although eventually the instance with the greater setting will create
+enough files in the range outside of the second instance. The second one
+will spend all of its time trying to delete the files. /
+
+We can refine this by allowing both instances to have the same /-files/
+setting and setting the /-wtcreate/ to *100* on the first instance and
+/-wtunlink/ to *100* on the second instance.
+
+------------------------------------------------------------------------
+
+
+  FAQ
+
+
+    What are the differences between hammer and elham?
+
+Each hammer instance basically works in its own directory to avoid
+contention in writing to files. Also, hammer maintains a directory
+listing in memory to avoid making readdir calls. In contrast, many elham
+instances are expected to work in the same directory space to generate
+contention in writing to files in order to test locking. Also, elham
+regenerates its directory listings each iteration to account for changes
+made by other instances.
+
+By the way, if the dlc is turned off, hammer will be faster than elham
+because it does not have to gather the directory listings every
+iteration. On the other hand, elham is testing more functionality.
+
+------------------------------------------------------------------------
+
+Thomas D. Haynes ( thomas@netapp.com <mailto:thomas@netapp.com>) 16
+January 2003
+$Id$
+
