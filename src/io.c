@@ -158,16 +158,16 @@ verifyControlStruct (ControlStruct *pcs)
 		if (pcs->ds.blockSize > MAXBLOCKSIZE) {
 			eh_fatal("-blocksize "LLUFMT" can not be larger "
 				"than the max block size of "LLUFMT"\n",
-				pcs->ds.blockSize, MAXBLOCKSIZE);
+				pcs->ds.blockSize, (uint8)MAXBLOCKSIZE);
 		}
 
 		if (pcs->ds.blockSize < MINBSIZE) {
 			eh_fatal("-blocksize "LLUFMT" can not be less "
 				"than the min block size of "LLUFMT"\n",
-				pcs->ds.blockSize, MINBSIZE);
+				pcs->ds.blockSize, (uint8)MINBSIZE);
 		}
 
-		if (pcs->ds.blockSize > pcs->ds.minfsize) {
+		if (pcs->ds.blockSize < pcs->ds.minfsize) {
 			eh_fatal("-blocksize "LLUFMT" can not be less "
 				"than the -minfsize "LLUFMT"\n",
 				pcs->ds.blockSize, pcs->ds.minfsize);
@@ -182,13 +182,13 @@ verifyControlStruct (ControlStruct *pcs)
 		if (pcs->ds.maxbsize > MAXBLOCKSIZE) {
 			eh_fatal("-maxbsize "LLUFMT" can not be larger "
 				"than the max block size of "LLUFMT"\n",
-				pcs->ds.maxbsize, MAXBLOCKSIZE);
+				pcs->ds.maxbsize, (uint8)MAXBLOCKSIZE);
 		}
 
 		if (pcs->ds.minbsize < MINBSIZE) {
 			eh_fatal("-minbsize "LLUFMT" can not be less "
 				"than the min block size of "LLUFMT"\n",
-				pcs->ds.minbsize, MINBSIZE);
+				pcs->ds.minbsize, (uint8)MINBSIZE);
 		}
 
 		if (pcs->ds.minbsize > pcs->ds.maxbsize) {
@@ -213,13 +213,13 @@ verifyControlStruct (ControlStruct *pcs)
 	if (pcs->ds.maxbsize > MAXFSIZE) {
 		eh_fatal("-maxbsize "LLUFMT" can not be larger "
 			"than the max file size of "LLUFMT"\n",
-			pcs->ds.maxbsize, MAXFSIZE);
+			pcs->ds.maxbsize, (uint8)MAXFSIZE);
 	}
 
 	if (pcs->ds.minfsize < MINFSIZE) {
 		eh_fatal("-minfsize "LLUFMT" can not be less "
 			"than the min file size of "LLUFMT"\n",
-			pcs->ds.minfsize, MINFSIZE);
+			pcs->ds.minfsize, (uint8)MINFSIZE);
 	}
 
 	if (pcs->ds.minfsize > pcs->ds.maxfsize) {
@@ -238,6 +238,10 @@ initControlStruct (ControlStruct *pcs)
 	 * Blank slate.
 	 */
 	memset(pcs, '\0', sizeof(ControlStruct));
+
+	pcs->ds.blockSize = 4;
+	pcs->ds.maxfsize = 4;
+	pcs->ds.minfsize = 4;
 
 	pcs->dsLock.minfsize = MINFSIZE;
 	pcs->dsLock.maxfsize = MAXFSIZE;

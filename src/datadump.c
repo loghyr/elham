@@ -77,9 +77,9 @@ processArgs (ControlStruct *pcs, int argc, char *argv[])
 	strcpy(pcs->meta.szBase, "./meta");
 	strcpy(pcs->history.szBase, "./history");
 
-	strcpy(pcs->data.szBase, "/t/blah/data");
-	strcpy(pcs->meta.szBase, "/t/blah/meta");
-	strcpy(pcs->history.szBase, "/t/blah/history");
+	strcpy(pcs->data.szBase, BASE_DATA_PATH);
+	strcpy(pcs->meta.szBase, BASE_META_PATH);
+	strcpy(pcs->history.szBase, BASE_HISTORY_PATH);
 
 	/*
 	 * Fill in dsSupplied by what is supplied on the command line.
@@ -191,12 +191,14 @@ main(int argc, char *argv[])
 	if (cs.dfcb.signature != METAFILE_SIGNATURE) {
 		eh_fatal("%s(%d): Metafile signature %#lx "
 			"does not match %#lx\n",
+			__FILE__, __LINE__,
 			cs.dfcb.signature, METAFILE_SIGNATURE);
 	}
 
 	if (cs.dfcb.version != METAFILE_VERSION) {
 		eh_fatal("%s(%d): Metafile version %#lx "
 			"does not match %#lx\n",
+			__FILE__, __LINE__,
 			cs.dfcb.version, METAFILE_VERSION);
 	}
 

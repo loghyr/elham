@@ -377,6 +377,10 @@ typedef unsigned __int64 Pid_t;
 
 #define SOILED_BLOCK_PATTERN 0xbeadc4e5031e1d49LL
 
+#define BASE_DATA_PATH "/t/data"
+#define BASE_META_PATH "/t/meta"
+#define BASE_HISTORY_PATH "/t/history"
+
 #define DOCFMT "%13.13s"
 
 typedef enum AccessEnum {

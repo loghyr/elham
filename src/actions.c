@@ -419,12 +419,20 @@ generateTheRecord (ControlStruct *pcs)
 
 	pcs->rs.pos = pcs->bs.offset;
 
+	/*
+	 * We know we have 8 extra bytes, so lets
+	 * copy over the entire 8 byte block and
+	 * let the transfer code handle it.
+	 */
 	if (pcs->rs.blockSize < sizeof(uint8)) {
 		pc = (char *)&pcs->bs.pattern;
-		for (k = 0; k < pcs->rs.blockSize; k++) {
+		for (k = 0; k < 8; k++) {
 			pcs->rs.block[k] = pc[k];
 		}
 	} else {
+		/*
+		 * XXX: Code review this chunk.
+		 */
 		pu = (uint8 *)pcs->rs.block;
 		*pu++ = pcs->bs.pattern;
 		for (k = sizeof(uint8);
@@ -988,12 +996,14 @@ actionRead (ControlStruct *pcs)
 	if (pcs->dfcb.signature != METAFILE_SIGNATURE) {
 		eh_fatal("%s(%d): Metafile signature %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.signature, METAFILE_SIGNATURE);
 	}
 
 	if (pcs->dfcb.version != METAFILE_VERSION) {
 		eh_fatal("%s(%d): Metafile version %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.version, METAFILE_VERSION);
 	}
 
@@ -1092,12 +1102,14 @@ actionModify (ControlStruct *pcs)
 	if (pcs->dfcb.signature != METAFILE_SIGNATURE) {
 		eh_fatal("%s(%d): Metafile signature %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.signature, METAFILE_SIGNATURE);
 	}
 
 	if (pcs->dfcb.version != METAFILE_VERSION) {
 		eh_fatal("%s(%d): Metafile version %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.version, METAFILE_VERSION);
 	}
 
@@ -1191,12 +1203,14 @@ actionUnlink (ControlStruct *pcs)
 	if (pcs->dfcb.signature != METAFILE_SIGNATURE) {
 		eh_fatal("%s(%d): Metafile signature %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.signature, METAFILE_SIGNATURE);
 	}
 
 	if (pcs->dfcb.version != METAFILE_VERSION) {
 		eh_fatal("%s(%d): Metafile version %#lx "
 				"does not match %#lx\n",
+				__FILE__, __LINE__,
 				pcs->dfcb.version, METAFILE_VERSION);
 	}
 
