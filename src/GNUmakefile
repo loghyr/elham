@@ -7,7 +7,7 @@ include ../Defs
 
 all: build
 
-BINS=elham$(EXE)
+BINS=elham$(EXE) datadump$(EXE) histdump$(EXE) metadump$(EXE)
 
 OBJS := actions.o dirent.o endy.o glue.o io.o list.o mt.o state.o elham.o
 
