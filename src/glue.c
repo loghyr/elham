@@ -56,6 +56,8 @@
 
 #include "elham.h"
 
+#define GLUE_RETRIES 10
+
 /*
  * -----------------------------------------------------------------------
  * File manipulation routines.
@@ -159,6 +161,7 @@ eh_OpenFile (FileStruct *pfs)
 #if defined (unix)
 	int		oflag = 0;
 	bool		b;
+	int		iRetries = 0;
 #else
 	DWORD		dwAccess = 0;
 	DWORD		dwShare = 0;
@@ -199,12 +202,23 @@ eh_OpenFile (FileStruct *pfs)
 	oflag |= O_LARGEFILE;
 #endif
 
+#if defined (O_DIRECT)
+	oflag |= O_DIRECT;
+#endif
+
 	/*
 	 * Should never need this, right?
 	 */
 	oflag |= O_BINARY;
 
-	pfs->fd = open(pfs->szFile, oflag, FILE_MODE);
+	do {
+		if (iRetries) {
+			sleep(iRetries);
+		}
+
+		pfs->fd = open(pfs->szFile, oflag, FILE_MODE);
+	} while ((pfs->fd < 0) && (errno == EINTR) && (iRetries++ < GLUE_RETRIES));
+
 	if (pfs->fd < 0) {
 		pfs->fd = INVALID_HANDLE_VALUE;
 		fprintf(stderr, "Open failed on |%s|\n", pfs->szFile);
@@ -581,12 +595,20 @@ eh_LockFileStruct (FileStruct *pfs, bool bCreate)
 uint8
 eh_Read (Filedesc_t fd, void *buf, uint8 bytes)
 {
-	uint8	c;
-	uint4	iRetries = 10;
+	uint8		c;
+	uint4		iRetries = 0;
+	Offset_t	oCurr;
+	Offset_t	oRewind;
 
 	eh_ASSERT(buf);
 
 #if defined (unix)
+	oCurr = lseek(fd, 0, SEEK_CUR);
+	if (oCurr == -1) {
+		fprintf(stderr, "Hit unexpected error in lseek\n");
+		syserror();
+	}
+
 	do {
 		c = read(fd, buf, bytes);
 		if (c == -1) {
@@ -598,8 +620,13 @@ eh_Read (Filedesc_t fd, void *buf, uint8 bytes)
 				 * Note: We should really reset the
 				 * file position.
 				 */
-				if (iRetries-- > 0) {
-					sleep(1);
+				if (iRetries++ < GLUE_RETRIES) {
+					oRewind = lseek(fd, oCurr, SEEK_SET);
+					if (oRewind == -1) {
+						fprintf(stderr, "Hit unexpected error in lseek\n");
+						syserror();
+					}
+					sleep(iRetries);
 					break;
 				}
 			case (EBADF) :
@@ -628,14 +655,22 @@ eh_Read (Filedesc_t fd, void *buf, uint8 bytes)
 uint8
 eh_Write (Filedesc_t fd, void *buf, uint8 bytes)
 {
-	uint8	c;
-	uint4	iRetries = 10;
+	uint8		c;
+	uint4		iRetries = 0;
+	Offset_t	oCurr;
+	Offset_t	oRewind;
 
-	bool	b = true;
+	bool		b = true;
 
 	eh_ASSERT(buf);
 
 #if defined (unix)
+	oCurr = lseek(fd, 0, SEEK_CUR);
+	if (oCurr == -1) {
+		fprintf(stderr, "Hit unexpected error in lseek\n");
+		syserror();
+	}
+
 	do {
 		c = write(fd, buf, bytes);
 		if (c == -1) {
@@ -680,8 +715,13 @@ eh_Write (Filedesc_t fd, void *buf, uint8 bytes)
 				/*
 				 * We should be kind and rewind?
 				 */
-				if (iRetries-- > 0) {
-					sleep(1);
+				if (iRetries++ < GLUE_RETRIES) {
+					oRewind = lseek(fd, oCurr, SEEK_SET);
+					if (oRewind == -1) {
+						fprintf(stderr, "Hit unexpected error in lseek\n");
+						syserror();
+					}
+					sleep(iRetries);
 					break;
 				}
 

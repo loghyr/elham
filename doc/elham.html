@@ -77,6 +77,9 @@ strategies</a></li>
 <li style="list-style: none">
 <ul>
 <li><a href="#strategy:recyle">File Recycling</a></li>
+<li><a href="#strategy:eaters">File Recycling II</a></li>
+<li><a href="#strategy:verifier">Corruption Tester</a></li>
+<li><a href="#strategy:small">Small files</a></li>
 </ul>
 </li>
 <li><a href="#faq">FAQ</a></li>
@@ -87,6 +90,7 @@ strategies</a></li>
 ElHam?</a></li>
 </ul>
 </li>
+<li><a href="#todo">ToDo</a></li>
 </ul>
 <hr noshade="noshade" align="center" size="6">
 <br>
@@ -97,13 +101,7 @@ ElHam?</a></li>
 <br>
 <p>Elham is a testing utility designed to provide multi-protocol
 locking, readdir, and corruption coverage.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="quick:files">File distribution</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Each file in ElHam is distributed to 3 different areas: data,
 meta, and history. The data file contains the randomly generated
 content which is grouped into blocks. The number of blocks that
@@ -123,25 +121,13 @@ time of the action. While the data and meta files can be deleted,
 the history files spans multiple instances of the data file.</p>
 <p>Finally, as a subset of blocks are randomly written to the data
 file, we allow for the testing of holes.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="quick:bytes">Byte Ordering</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>All files are binary and are written to in network data order.
 As such, the various implementations of hexdump may or may not
 display the data correctly on little endian systems. Use
 <b>datadump</b> to examine a file if needed. It displays data akin
 to the defaults of the Solaris hexdump utility.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="quick:actions">Actions</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Each instance of ElHam determines an action from either create,
 read, write, delete, and unlink. It then applies that action to a
 randomly selected file. Other than create, for each action which
@@ -152,12 +138,7 @@ occurred.</p>
 <br>
 <h1><a name="files">File Formats</a></h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="files:meta">Meta</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>The first 48 bytes of a meta file are the
 <b>DataFileControlBlock</b> and it has the fields, in order:</p>
 <table border="2">
@@ -327,13 +308,7 @@ the block</td>
 blocks</em></p>
 <p><em>XXX remove access fields?</em></p>
 <p><em>XXX Verify blockNumber * blockSize == offset</em></p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="files:history">History</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Each history block occupies 40 bytes and the fields are in
 order:</p>
 <table border="2">
@@ -412,12 +387,7 @@ block</td>
 <br>
 <h1><a name="setup">Setup</a></h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="setup:dirs">Directories</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Elham requires three different directories to proceed:</p>
 <ul>
 <li><em>-data</em> houses the data files tested for corruption</li>
@@ -451,17 +421,11 @@ corruption. E.g.:</p>
 <p>The reason you can't have <em>-data == -meta == -history</em> is
 because each hierarchy is populated with files and directories with
 the same names and extensions. For example,
-<b>/t/bo/vol1/data/0.dlh/5.dlh/19.flh</b>,
-<b>/t/bo/vol1/meta/0.dlh/5.dlh/19.flh</b>, and
-<b>/t/bo/vol1/history/0.dlh/5.dlh/19.flh</b> are respectively the
+<b>/t/hawk/vol1/data/0.dlh/5.dlh/19.flh</b>,
+<b>/t/hawk/vol1/meta/0.dlh/5.dlh/19.flh</b>, and
+<b>/t/hawk/vol1/history/0.dlh/5.dlh/19.flh</b> are respectively the
 data, meta, and history files for <b>0.dlh/5.dlh/19.flh</b>.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="setup:nfs">NFS mount options</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Because of file contention in ElHam, which is not present in
 hammer, it is very important to have data committed to the data
 store on the server and not cached on the client. As such, here are
@@ -490,12 +454,7 @@ some recommended settings for mounting the data store:</p>
 <br>
 <h1><a name="params">Parameters</a></h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:paths">Paths</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -520,13 +479,7 @@ some recommended settings for mounting the data store:</p>
 </tr>
 </tbody>
 </table>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:rand">Random number generation</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -552,14 +505,8 @@ number in the sequence generated by the <em>-seed</em>.</p>
 described in detail at <a href=
 "http://www.math.keio.ac.jp/matumoto/emt.html">Mersenne Twister
 Home Page</a>.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:default">Default parameterization for testing
 strategies</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -613,13 +560,7 @@ warlock(loghyr)&gt; ./elham.sun4 -doc -lock -iters 1
     -wtunlink is 20
 === Final Input Parameters ===
 </pre>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:shaping">Directory tree shaping</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -675,13 +616,7 @@ in the range of the number of files and determine if it exists or
 not. If it does, we pick another name. When we have a name which
 does not exist, we construct the path to the name, if needed, and
 then create the file.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:actions">Actions</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -740,13 +675,7 @@ describes how many blocks will have that action applied to them.
 Also, for create, the number of blocks created will be dictated by
 <em>-acton</em>. The blocks are randomly selected over the set of
 all blocks in the file.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:access">File access and locking</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -788,13 +717,7 @@ all blocks in the file.</p>
 </table>
 <p>The <em>-wt*</em> and <em>-scan</em> options are mutually
 exclusive and ElHam will puke on the combination.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:block">Block and File sizes</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -834,13 +757,7 @@ exclusive and ElHam will puke on the combination.</p>
 </tr>
 </tbody>
 </table>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="params:help">Help</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <table border="2">
 <tbody>
 <tr>
@@ -870,31 +787,14 @@ exclusive and ElHam will puke on the combination.</p>
 <br>
 <h1><a name="tools">Some additional tools</a></h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="tools:data">datadump</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Convert the binary data blocks into human readable format. Also
 verifies the blocks. Can work on all blocks in a file or only
 one.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="tools:hist">histdump</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Convert the binary history blocks into human readable
 format.</p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="tools:meta">metadump</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Convert the binary metadata blocks into human readable
 format.</p>
 <hr noshade="noshade" align="center" size="6">
@@ -903,48 +803,75 @@ format.</p>
 <a name="strategy"></a>
 <h1><a name="strategy">Some testing strategies</a></h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="strategy:recycle">File Recycling</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p>Run one instance of ElHam with <em>-files</em> very much greater
 than a second instance. This will force the first instance to want
 to create files and the second instance to want to delete files.
 They should cycle through the subset of files owned by the second
 instance.</p>
+<pre>
+./elham -files 1000
+./elham -files 100000
+</pre>
 <p><em>Although eventually the instance with the greater setting
 will create enough files in the range outside of the second
 instance. The second one will spend all of its time trying to
 delete the files.</em></p>
+<h2><a name="strategy:eaters">File Recycling II</a></h2>
 <p>We can refine this by allowing both instances to have the same
 <em>-files</em> setting and setting the <em>-wtcreate</em> to
 <b>100</b> on the first instance and <em>-wtunlink</em> to
 <b>100</b> on the second instance.</p>
+<pre>
+./elham -wtread 0 -wtcreate 100 -wtwrite 0 -wtdelete 0 -wtunlink 0
+./elham -wtread 0 -wtcreate 0 -wtwrite 0 -wtdelete 0 -wtunlink 100
+</pre>
+<p>This has one instance only creating files and the second only deleting. It
+makes for some very interesting testing of locks.<p>
+<p>If combining this test with other testing strategies, a slight modification
+allows for other actions to occur:</p>
+<pre>
+./elham -wtread 10 -wtcreate 70 -wtwrite 10 -wtdelete 10 -wtunlink 0
+./elham -wtread 10 -wtcreate 0 -wtwrite 10 -wtdelete 10 -wtunlink 70
+</pre>
+<h2><a name="strategy:verifier">Corruption Tester</a></h2>
+<p>A very simple client to just test for corruption caused by other clients:</p>
+<pre>
+./elham -scan read
+</pre>
+<h2><a name="strategy:small">Small files</a></h2>
+<p>The default values for ElHam favor random distributions. In order to test small
+files, i.e., many different file operations, read and writes are limited in size,
+etc, try something like:</p>
+<pre>
+./elham -blocksize random -minbsize 8 -maxbsize 1024 -minfsize 16 -maxfsize 4096 -width 10
+</pre>
+<p>Additionally, in some file system implementations, files with very small file sizes,
+say less than 64 bytes, are kept entirely within the inode itself.  The following
+clients would stress such implementations:</p>
+<pre>
+./elham -blocksize random -minbsize 4 -maxbsize 63 -minfsize 0 -maxfsize 64 -width 10
+./elham -blocksize random -minbsize 4 -maxbsize 65 -minfsize 0 -maxfsize 65 -width 10
+./elham -blocksize random -minbsize 4 -maxbsize 64 -minfsize 4 -maxfsize 128 -width 10
+</pre>
+<p>If the filesystem has a maximum number of allowed inodes and small files are
+kept entirely within the inode, you could use such clients like those above with
+the <em>-width</em>, <em>-depth</em>, and <em>-files</em> options to quickly stress 
+the number of allowed inodes.  This trick can also be used to test inode recycling.
+<em>XXX: Flesh out into its own section and provide some
+client instances</em></p>
 <hr noshade="noshade" align="center" size="6">
 <br>
 <br>
 <a name="faq"></a>
 <h1>FAQ</h1>
 <hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="faq:download">Where can I get the latest copy of
 ElHam?</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p><a href="http://sourceforge.net/projects/elham/">Project: ElHam:
 Multiprotocol File System Testing</a></p>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <h2><a name="faq:evh">What are the differences between hammer and
 ElHam?</a></h2>
-<hr noshade="noshade" align="center" size="6">
-<br>
-<br>
 <p><em>hammer is an inhouse corruption testing tool at Network
 Appliance</em></p>
 <p>Each hammer instance basically works in its own directory to
@@ -958,6 +885,19 @@ each iteration to account for changes made by other instances.</p>
 ElHam because it does not have to gather the directory listings
 every iteration. On the other hand, ElHam is testing more
 functionality.</p>
+<hr noshade="noshade" align="center" size="6">
+<br>
+<br>
+<a name="todo"></a>
+<h1>ToDo</h1>
+<hr noshade="noshade" align="center" size="6">
+<ul>
+<li>Can -minbsize ever be 0?</li>
+<li>Does the OS have some limit on the -minbsize?</li>
+<li>Need to handle EPERM</li>
+<li>I've found corruption, what now?</li>
+<li>Provide a stock filesystem with corruption, see if clients can catch it?</li>
+</ul>
 <hr noshade="noshade" align="center" size="6">
 <br>
 <br>
