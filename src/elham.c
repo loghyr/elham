@@ -499,6 +499,7 @@ main (int argc, char *argv[])
 			}
 
 			sleep(1);
+			destroyList(&cs.data.hs);
 			continue;
 		}
 
