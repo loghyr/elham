@@ -36,20 +36,6 @@
  */
 
 /*
-
-## @summary Multi-Protocol data verifier
-## @pod here
-## @author thomas@netapp.com
-
-=head1 Preamble
-
-The elham utility, lock manager - hammer, is to provide both
-multiprotocol lock manager testing and corruption testing.
-
-=cut
-*/
-
-/*
  * Main for the lock manager testing.
  */
 

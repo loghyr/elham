@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_INIT(Defs.in)
-AC_INIT([ElHam], [1.0.0], [thomas@netapp.com], [elham])
+AC_INIT([ElHam], [1.0.0], [loghyr@users.sourceforge.net], [elham])
 
 AC_CONFIG_HEADER([config.h])
 

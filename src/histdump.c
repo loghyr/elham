@@ -35,19 +35,6 @@
  * $Id$
  */
 
-/*
-
-## @summary Scan metafiles for ElHam.
-## @pod here
-## @author thomas@netapp.com
-
-=head1 Preamble
-
-Read in a history file and print out its contents.
-
-=cut
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
