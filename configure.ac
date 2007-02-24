@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_INIT(Defs.in)
 AC_INIT([ElHam], [1.0.0], [loghyr@users.sourceforge.net], [elham])
+AC_PREREQ(2.57)
 
 AC_CONFIG_HEADER([config.h])
 
@@ -13,6 +14,14 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
 AC_HEADER_STAT
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_STAT
+AC_FUNC_VPRINTF
+AC_HEADER_TIME
+AC_PROG_INSTALL
+AC_TYPE_OFF_T
+
+AC_C_BIGENDIAN
 
 # try some values for _FILE_OFFSET_BITS, and see what off_t sizes we
 # can request.
