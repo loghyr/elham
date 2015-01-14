@@ -7,6 +7,8 @@ autoconf
 ./configure
 make
 
+NOTE: These instructions are 11 years old and are broken.
+
 Minimal set of execution instructions:
 
 mkdir /foo1/data
